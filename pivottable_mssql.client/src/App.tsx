@@ -15,10 +15,10 @@ function App() {
 
   // Initialize DataManager with the Web API endpoint
   let data: DataManager = new DataManager({
-    url: 'http://localhost:5096/api/Sales',                    // Data retrieval endpoint
-    insertUrl: 'http://localhost:5096/api/Sales/Insert',       // Called when user adds a new record
-    updateUrl: 'http://localhost:5096/api/Sales/Update',       // Called when user edits an existing record
-    removeUrl: 'http://localhost:5096/api/Sales/Remove',       // Called when user deletes a record
+    url: 'https://localhost:7086/api/Sales',                    // Data retrieval endpoint
+    insertUrl: 'https://localhost:7086/api/Sales/Insert',       // Called when user adds a new record
+    updateUrl: 'https://localhost:7086/api/Sales/Update',       // Called when user edits an existing record
+    removeUrl: 'https://localhost:7086/api/Sales/Remove',       // Called when user deletes a record
     adaptor: new UrlAdaptor                                    // Uses the standard URL adaptor for HTTP communication
   });
 
@@ -65,7 +65,7 @@ function App() {
   // Fetch and calculate statistics
   const fetchStatistics = async () => {
     try {
-      const response = await fetch('https://localhost:7285/api/Sales');
+      const response = await fetch('https://localhost:7086/api/Sales');
       const result = await response.json();
 
       if (result && Array.isArray(result) && result.length > 0) {

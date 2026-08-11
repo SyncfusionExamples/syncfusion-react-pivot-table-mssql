@@ -39,12 +39,12 @@ namespace PivotTable_MSSQL.Server.Controllers
         /// <returns>Returns a list of SalesData records fetched from the database.</returns>
         [HttpGet]
         [Route("api/[controller]")]
-        public List<SalesData> GetSalesData()
+        public async Task<List<SalesData>> GetSalesData()
         {
             const string Query = @"SELECT * FROM dbo.salesdata ORDER BY orderid;";
 
             using var Connection = new SqlConnection(_connectionString);
-            Connection.Open();
+            await Connection.OpenAsync();
 
             using var Command = new SqlCommand(Query, Connection);
             using var DataAdapter = new SqlDataAdapter(Command);
@@ -127,7 +127,7 @@ namespace PivotTable_MSSQL.Server.Controllers
         /// <returns>Returns the inserted record with its new OrderID.</returns>
         [HttpPost]
         [Route("api/[controller]/Insert")]
-        public IActionResult Insert([FromBody] CRUDModel<SalesData> model)
+        public async Task<IActionResult> Insert([FromBody] CRUDModel<SalesData> model)
         {
             if (model?.Value == null)
                 return BadRequest("A sales record is required.");
@@ -155,7 +155,7 @@ namespace PivotTable_MSSQL.Server.Controllers
         ";
 
                 using var conn = new SqlConnection(_connectionString);
-                conn.Open();
+                await conn.OpenAsync();
 
                 using var cmd = new SqlCommand(sql, conn);
 
@@ -172,7 +172,7 @@ namespace PivotTable_MSSQL.Server.Controllers
                 cmd.Parameters.AddWithValue("@SalesPerson", (object?)model.Value.SalesPerson ?? DBNull.Value);
 
                 // Execute the query and get the newly created OrderID
-                var newId = Convert.ToInt32(cmd.ExecuteScalar());
+                var newId = Convert.ToInt32(await cmd.ExecuteScalarAsync());
 
                 // Update the model with the new ID
                 model.Value.OrderID = newId;
@@ -196,7 +196,7 @@ namespace PivotTable_MSSQL.Server.Controllers
         /// <returns>Returns the number of rows updated.</returns>
         [HttpPost]
         [Route("api/[controller]/Update")]
-        public IActionResult Update([FromBody] CRUDModel<SalesData> model)
+        public async Task<IActionResult> Update([FromBody] CRUDModel<SalesData> model)
         {
             if (model?.Value == null)
                 return BadRequest("A sales record is required.");
@@ -231,7 +231,7 @@ namespace PivotTable_MSSQL.Server.Controllers
         ";
 
                 using var conn = new SqlConnection(_connectionString);
-                conn.Open();
+                await conn.OpenAsync();
 
                 using var cmd = new SqlCommand(sql, conn);
 
@@ -249,7 +249,7 @@ namespace PivotTable_MSSQL.Server.Controllers
                 cmd.Parameters.AddWithValue("@OrderID", model.Value.OrderID);
 
                 // Execute the update
-                var rows = cmd.ExecuteNonQuery();
+                var rows = await cmd.ExecuteNonQueryAsync();
 
                 // UrlAdaptor expects { key, value, action } on update.
                 return Ok(new { key = model.Value.OrderID, value = model.Value, action = "update" });
@@ -268,7 +268,7 @@ namespace PivotTable_MSSQL.Server.Controllers
         /// <returns>Returns the number of rows deleted.</returns>
         [HttpPost]
         [Route("api/[controller]/Remove")]
-        public IActionResult Remove([FromBody] CRUDModel<SalesData> model)
+        public async Task<IActionResult> Remove([FromBody] CRUDModel<SalesData> model)
         {
             if (model?.Key == null)
                 return BadRequest("Missing key.");
@@ -281,13 +281,13 @@ namespace PivotTable_MSSQL.Server.Controllers
                 const string sql = @"DELETE FROM dbo.salesdata WHERE orderid = @OrderID;";
 
                 using var conn = new SqlConnection(_connectionString);
-                conn.Open();
+                await conn.OpenAsync();
 
                 using var cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@OrderID", id);
 
                 // Execute the delete
-                var rows = cmd.ExecuteNonQuery();
+                var rows = await cmd.ExecuteNonQueryAsync();
 
                 // UrlAdaptor expects { key, action } on remove.
                 return Ok(new { key = id, action = "remove" });
